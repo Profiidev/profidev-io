@@ -47,7 +47,7 @@
       <span class="name">{$isValid ? $currentUser?.username : "Not Loged in"}</span>
       <span class="group">{$isValid ? $currentUser?.permissions === 0 ? "Admin" : "User" : ""}</span>
     </a>
-    <button class="bx bx-log-out gradient" on:click={gotoLogin}></button>
+    <button class="bx {$isValid ? "bx-log-out" : "bx-log-in"} gradient" on:click={gotoLogin}></button>
     <span class="tooltip">{$isValid ? "Logout" : "Login"}</span>
   </div>
 </div>

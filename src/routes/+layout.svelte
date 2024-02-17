@@ -30,7 +30,7 @@
 
     --error-color: #ff0000;
 
-    --background-color: #212121;
+    --background-color: #1c1c1f;
     --background-color2: #141414;
     --background-color3: #070708;
   }
@@ -38,9 +38,8 @@
   .container {
     position: absolute;
     height: 100vh;
-    max-width: calc(100vw - 78px);
+    min-width: calc(100vw - 78px);
     left: 78px;
-    overflow: hidden;
     background-color: var(--background-color);
   }
 </style>
