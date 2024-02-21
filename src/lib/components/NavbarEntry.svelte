@@ -1,12 +1,17 @@
 <script lang="ts">
+  import { page } from '$app/stores';
+
   export let name = "";
   export let icon = "";
   export let link = "/";
   export let open = false;
+
+  let highlighted = false;
+  $: highlighted = $page.route !== null && $page.route.id === link;
 </script>
 
 <li class:open={open}>
-  <a href="{link}">
+  <a href="{link}" class:highlight={highlighted}>
     <i class="{icon}"></i>
     <span class="links_name">{name}</span>
   </a>
@@ -63,7 +68,8 @@
     transition: all 0.4s ease;
     background: var(--background-color2);
   }
-  li a:hover{
+  li a:hover,
+  li a.highlight{
     background-image: linear-gradient(180deg, var(--primary-color1) 0%, var(--primary-color3) 100%);
     background-attachment: fixed;
     color: var(--background-color2);
@@ -85,7 +91,9 @@
     pointer-events: auto;
   }
   li a:hover .links_name,
-  li a:hover i{
+  li a:hover i,
+  li a.highlight .links_name,
+  li a.highlight i{
     transition: all 0.5s ease;
     background-image: linear-gradient(180deg, var(--primary-color1) 0%, var(--primary-color3) 100%);
     background-attachment: fixed;

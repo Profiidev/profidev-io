@@ -18,6 +18,7 @@
 </div>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
   :global(:root) {
     --primary-color1: #ff8000;
     --primary-shadow1: rgba(255, 153, 0, 0.3);
@@ -33,6 +34,8 @@
     --background-color: #1c1c1f;
     --background-color2: #141414;
     --background-color3: #070708;
+
+    font-family: "Poppins" , sans-serif;
   }
 
   .container {

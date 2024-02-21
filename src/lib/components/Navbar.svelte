@@ -2,13 +2,17 @@
   import NavbarEntry from "./NavbarEntry.svelte";
   import { currentUser, isValid, pb } from "$lib/auth";
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
 
   let open = false;
   let closeBtnClass = "bx bx-menu";
   let closeBtn: HTMLElement;
+  let onLoginPage = false;
+
+  $: onLoginPage = $page.route !== null && $page.route.id === "/login";
   
   const navEntries = [
-    { name: "Dashboard", icon: "bx bx-grid-alt", link: "/dashboard" },
+    { name: "Dashboard", icon: "bx bx-grid-alt", link: "/" },
     { name: "Users", icon: "bx bx-user", link: "/users" },
     { name: "Statistics", icon: "bx bx-pie-chart", link: "/statistics" },
     { name: "Cloud", icon: "bx bx-folder", link: "/cloud" },
@@ -44,16 +48,15 @@
   </ul>
   <div class="profile">
     <a href="/account" class="info gradient">
-      <span class="name">{$isValid ? $currentUser?.username : "Not Loged in"}</span>
+      <span class="name">{$isValid ? $currentUser?.name : "Not Loged in"}</span>
       <span class="group">{$isValid ? $currentUser?.permissions === 0 ? "Admin" : "User" : ""}</span>
     </a>
-    <button class="bx {$isValid ? "bx-log-out" : "bx-log-in"} gradient" on:click={gotoLogin}></button>
+    <button class="bx {$isValid ? "bx-log-out" : "bx-log-in"} gradient" on:click={gotoLogin} class:highlight={onLoginPage}></button>
     <span class="tooltip">{$isValid ? "Logout" : "Login"}</span>
   </div>
 </div>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
   *{
     margin: 0;
     padding: 0;
@@ -216,7 +219,8 @@
     border: none;
     cursor: pointer;
   }
-  .profile button:hover{
+  .profile button:hover,
+  .profile button.highlight{
     background-image: linear-gradient(180deg, var(--primary-color1) 0%, var(--primary-color3) 100%);
     background-attachment: fixed;
     color: var(--background-color2);
