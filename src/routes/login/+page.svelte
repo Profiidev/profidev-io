@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import { get } from "svelte/store";
   import Loader from "$lib/components/Loader.svelte";
+  import { lastUrl } from "$lib/stores";
 
   let username = "";
   let password = "";
@@ -12,7 +13,8 @@
 
   onMount(() => {
     if(get(isValid)) {
-      goto("/");
+      goto($lastUrl);
+      lastUrl.set("/");
     }
   });
 
@@ -26,7 +28,8 @@
     if(user) {
       username = "";
       password = "";
-      goto("/");
+      goto($lastUrl);
+      lastUrl.set("/");
     }
     showLoader = false;
   }

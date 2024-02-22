@@ -3,6 +3,7 @@
   import { currentUser, isValid, pb } from "$lib/auth";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { Permissions, checkPermission } from "$lib/permissions";
 
   let open = false;
   let closeBtnClass = "bx bx-menu";
@@ -11,14 +12,33 @@
 
   $: onLoginPage = $page.route !== null && $page.route.id === "/login";
   
-  const navEntries = [
-    { name: "Dashboard", icon: "bx bx-grid-alt", link: "/" },
-    { name: "Users", icon: "bx bx-user", link: "/users" },
-    { name: "Statistics", icon: "bx bx-pie-chart", link: "/statistics" },
-    { name: "Cloud", icon: "bx bx-folder", link: "/cloud" },
-    { name: "Portainer", icon: "bx bxl-docker", link: "/portainer" },
-    { name: "Setting", icon: "bx bx-cog", link: "/setting" },
-  ];
+  let navEntries: {
+    name: string;
+    icon: string;
+    link: string;
+  }[] = [];
+
+  $: {
+    navEntries = [];
+    let permissions = $currentUser?.permissions;
+    navEntries.push({ name: "Dashboard", icon: "bx bx-grid-alt", link: "/" })
+    if(checkPermission(permissions, Permissions.Users)) {
+      navEntries.push({ name: "Users", icon: "bx bx-user", link: "/users" });
+    }
+    if(checkPermission(permissions, Permissions.Metrics)) {
+      navEntries.push({ name: "Statistics", icon: "bx bx-pie-chart", link: "/statistics" });
+    }
+    if(checkPermission(permissions, Permissions.Cloud)) {
+      navEntries.push({ name: "Cloud", icon: "bx bx-folder", link: "/cloud" });
+    }
+    if(checkPermission(permissions, Permissions.Portainer)) {
+      navEntries.push({ name: "Portainer", icon: "bx bxl-docker", link: "https://portainer.profidev.io" });
+    }
+    if(checkPermission(permissions, Permissions.Database)) {
+      navEntries.push({ name: "Pocketbase", icon: "bx bx-data", link: "https://pocketbase.profidev.io/_/" });
+    }
+    navEntries.push({ name: "Setting", icon: "bx bx-cog", link: "/settings" });
+  };
 
   const toggleSidebar = () => {
     open = !open;

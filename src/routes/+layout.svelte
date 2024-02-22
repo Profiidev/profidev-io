@@ -1,13 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { get } from "svelte/store";
-  import { isValid } from "$lib/auth";
+  import { isValid, pb } from "$lib/auth";
   import { goto } from "$app/navigation";
   import Navbar from "$lib/components/Navbar.svelte";
+  import { lastUrl } from "$lib/stores";
 
   onMount(() => {
     if(!get(isValid)) {
+      lastUrl.set(location.pathname);
       goto("/login");
+    } else {
+      pb.collection("users").authRefresh();
     }
   })
 </script>
@@ -31,8 +35,8 @@
 
     --error-color: #ff0000;
 
-    --background-color: #1c1c1f;
-    --background-color2: #141414;
+    --background-color: #161819;
+    --background-color2: #0F1011;
     --background-color3: #070708;
 
     font-family: "Poppins" , sans-serif;
