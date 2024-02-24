@@ -5,11 +5,19 @@
 
   let fullScreen: boolean | undefined = undefined;
   let widthSmaller: boolean = false;
+  let lastClick: number = 0;
 
   $: fullScreen = currentFullScreen === '' ? undefined : currentFullScreen === id;
 
   const toogleFullScreen = () => {
     currentFullScreen = fullScreen ? '' : id;
+  }
+
+  const doubleClick = () => {
+    if (lastClick + 300 > Date.now()) {
+      toogleFullScreen();
+    }
+    lastClick = Date.now();
   }
 
   const resize = () => {
@@ -20,7 +28,7 @@
 <svelte:window on:resize={resize} />
 
 <button class:full-screen-container={fullScreen} class="container" style="--width: {size}; --height: {size};" on:click={toogleFullScreen}>
-  <button class="card-container" style="--width: {size}; --height: {size}; --fullWidth: 100{widthSmaller ? "vw" : "vh"};" on:click|stopPropagation={toogleFullScreen} class:not-visible={fullScreen !== undefined  && !fullScreen} class:full-screen={fullScreen}>
+  <button class="card-container" style="--width: {size}; --height: {size}; --fullWidth: 100{widthSmaller ? "vw" : "vh"};" on:click|stopPropagation={doubleClick} class:not-visible={fullScreen !== undefined  && !fullScreen} class:full-screen={fullScreen}>
     <div class="card">
       <slot/>
     </div>
@@ -45,8 +53,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    min-width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;

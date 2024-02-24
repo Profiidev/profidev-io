@@ -141,7 +141,7 @@
   }
   .sidebar i, .sidebar button{
     height: 60px;
-    min-width: 50px;
+    width: 50px;
     font-size: 28px;
     text-align: center;
     line-height: 60px;
@@ -197,7 +197,7 @@
     flex-direction: column;
     justify-content: center;
     padding-left: 0;
-    max-width: calc(100% - 50px);
+    width: calc(100% - 50px);
   }
   .sidebar.open .profile .info{
     padding: 0 10px;
@@ -216,7 +216,7 @@
     pointer-events: none;
     border-radius: 12px;
     transition: all 0.4s ease;
-    max-width: 100%;
+    width: 100%;
   }
   .sidebar.open .profile .info .name,
   .sidebar.open .profile .info .group{

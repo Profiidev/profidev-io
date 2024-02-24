@@ -49,8 +49,8 @@
 
   .container {
     position: absolute;
-    height: 100vh;
-    min-width: calc(100vw - 78px);
+    height: 100%;
+    width: calc(100% - 78px);
     left: 78px;
     background-color: var(--background-color);
   }

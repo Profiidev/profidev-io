@@ -7,6 +7,6 @@ export enum Permissions {
   Database = 16,
 }
 
-export const checkPermission = (permission: Permissions, permissions: number) => {
+export const checkPermission = (permissions: number, permission: Permissions) => {
   return (permissions & permission) === permission || permissions === Permissions.Admin;
-}
+};

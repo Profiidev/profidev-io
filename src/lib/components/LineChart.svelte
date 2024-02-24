@@ -39,13 +39,13 @@
             type: 'time',
             time: {
               unit: 'minute',
-              parser: 'yyyy-MM-dd HH:mm:ss.SSS',
+              parser: 'yyyy-MM-dd HH:mm:ss.SSS'
             }
           },
           y: {
             beginAtZero: true,
             ticks: {
-              callback: function(value, index, values) {
+              callback: (value, index, values) => {
                 return value + '%';
               }
             }
