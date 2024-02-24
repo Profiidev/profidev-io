@@ -14,6 +14,7 @@
       }
     } else {
       pb.collection("users").authRefresh().catch(e => {
+        pb.authStore.clear();
         lastUrl.set(location.pathname);
         goto("/login");
       });
