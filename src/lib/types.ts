@@ -5,3 +5,8 @@ export type Dataset = {
   cubicInterpolationMode: string;
   tension: number;
 };
+
+export type UserColumn = {
+  label: string;
+  width: number;
+};

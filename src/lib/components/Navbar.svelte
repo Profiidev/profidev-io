@@ -32,10 +32,10 @@
       navEntries.push({ name: "Cloud", icon: "bx bx-folder", link: "/cloud" });
     }
     if(checkPermission(permissions, Permissions.Portainer)) {
-      navEntries.push({ name: "Portainer", icon: "bx bxl-docker", link: "https://portainer.profidev.io" });
+      navEntries.push({ name: "Portainer", icon: "bx bxl-docker", link: "/portainer" });
     }
     if(checkPermission(permissions, Permissions.Database)) {
-      navEntries.push({ name: "Pocketbase", icon: "bx bx-data", link: "https://pocketbase.profidev.io/_/" });
+      navEntries.push({ name: "Pocketbase", icon: "bx bx-data", link: "/pocketbase" });
     }
     navEntries.push({ name: "Setting", icon: "bx bx-cog", link: "/settings" });
   };

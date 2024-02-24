@@ -8,10 +8,15 @@
 
   onMount(() => {
     if(!get(isValid)) {
-      lastUrl.set(location.pathname);
-      goto("/login");
+      if(location.pathname !== "/login") {
+        lastUrl.set(location.pathname);
+        goto("/login");
+      }
     } else {
-      pb.collection("users").authRefresh();
+      pb.collection("users").authRefresh().catch(e => {
+        lastUrl.set(location.pathname);
+        goto("/login");
+      });
     }
   })
 </script>

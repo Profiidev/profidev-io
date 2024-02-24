@@ -4,19 +4,23 @@
   import { onMount } from "svelte";
   import type { Dataset } from "$lib/types";
   import { getCpuDatasets, getMemoryDataset } from "$lib/data";
-  import { getAPOD } from "$lib/images";
   import { isValid, currentUser } from "$lib/auth";
   import Loader from "$lib/components/Loader.svelte";
   import { Permissions, checkPermission } from "$lib/permissions";
+  import type { PageData } from "./$types";
+  import Card from "$lib/components/Card.svelte";
+
+  export let data: PageData;
 
   let timeLabels: string[] = [];
   let cpuDatasets: Dataset[] = [];
   let memoryDatasets: Dataset[] = [];
-  let apod: string;
   let size = "500px";
   let imageWidthScale = 1;
   let imageHeightScale = 1;
   let mounted = false;
+  let currentFullScreen = '';
+  let lastUpdate = 0;
   
   const updateData = () => {
     getCpuDatasets(true).then((data) => {
@@ -26,9 +30,8 @@
     getMemoryDataset().then((data) => {
       memoryDatasets = data;
     });
-    getAPOD().then((data) => {
-      apod = data;
-    });
+    clearTimeout(lastUpdate);
+    lastUpdate = setTimeout(updateData, 60000);
   }
   ;
   const load = (img: any) => {
@@ -44,24 +47,36 @@
     }
   }
 
+  const keypress = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      currentFullScreen = '';
+    }
+  }
+
   onMount(() => {
     mounted = true;
     updateData();
   });
 </script>
 
+<svelte:window on:keyup={keypress} />
+
 {#if mounted}
   {#if $isValid}
     <div class="conatiner">
       {#if checkPermission($currentUser?.permissions, Permissions.Metrics)}
-        <LineChart size={size} datasets={cpuDatasets} labels={timeLabels} header="Cpu Usage" />
-        <LineChart size={size} datasets={memoryDatasets} labels={timeLabels} header="Memory Usage" />
+        <Card size={size} id="cpu" bind:currentFullScreen={currentFullScreen}>
+          <LineChart datasets={cpuDatasets} labels={timeLabels} header="Cpu Usage" />
+        </Card>
+        <Card size={size} id="memory" bind:currentFullScreen={currentFullScreen}>
+          <LineChart datasets={memoryDatasets} labels={timeLabels} header="Memory Usage" />
+        </Card>  
       {/if}
-      <div class="apod-container" style="--size: {size}; --scaleW: {imageWidthScale}; --scaleH: {imageHeightScale};">
-        <div class="apod">
-          <img src={apod} alt="APOD" on:load={load} />
+      <Card size={size} id="apod" bind:currentFullScreen={currentFullScreen}>
+        <div class="apod" style="--scaleW: {imageWidthScale}; --scaleH: {imageHeightScale};">
+          <img src={data.apod} alt="APOD" on:load={load} />
         </div>
-      </div>
+      </Card>
     </div>
   {:else}
     <div class="not-container">
@@ -76,7 +91,6 @@
   .conatiner {
     display: flex;
     justify-content: space-around;
-    align-items: center;
     flex-wrap: wrap;
     height: 100%;
     height: 100%;
@@ -84,35 +98,17 @@
     overflow-y: auto;
   }
 
-  .apod-container {
-    width: var(--size);
-    height: var(--size);
-    background-image: linear-gradient(163deg, var(--primary-color1) 0%, var(--primary-color3) 100%);
-    border-radius: 22px;
-    transition: all .3s;
-    margin: 20px;
-  }
-
   .apod {
-    width: 100%;
-    height: 100%;
-    background-color: var(--background-color2);
-    border-radius: 20px;
-    transition: all .2s;
     display: flex;
     justify-content: center;
     align-items: center;
-    transform: scale(1.01);
-  }
-
-  .apod:hover {
-    transform: scale(.98);
-    border-radius: 20px;
+    width: 100%;
+    height: 100%;
   }
 
   .apod img {
-    width: calc(var(--size) * var(--scaleW));
-    height: calc(var(--size) * var(--scaleH));
+    width: calc(100% * var(--scaleW));
+    height: calc(100% * var(--scaleH));
     border-radius: 20px;
   }
 
