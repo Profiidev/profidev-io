@@ -20,6 +20,12 @@
     lastClick = Date.now();
   }
 
+  const singleClick = () => {
+    if (fullScreen) {
+      toogleFullScreen();
+    }
+  }
+
   const resize = () => {
     widthSmaller = window.innerWidth < window.innerHeight;
   }
@@ -27,7 +33,7 @@
 
 <svelte:window on:resize={resize} />
 
-<button class:full-screen-container={fullScreen} class="container" style="--width: {size}; --height: {size};" on:click={toogleFullScreen}>
+<button class:full-screen-container={fullScreen} class="container" style="--width: {size}; --height: {size};" on:click={singleClick}>
   <button class="card-container" style="--width: {size}; --height: {size}; --fullWidth: 100{widthSmaller ? "vw" : "vh"};" on:click|stopPropagation={doubleClick} class:not-visible={fullScreen !== undefined  && !fullScreen} class:full-screen={fullScreen}>
     <div class="card">
       <slot/>
@@ -71,11 +77,19 @@
   .card-container {
     background-image: linear-gradient(163deg, var(--primary-color1) 0%, var(--primary-color3) 100%);
     border-radius: 22px;
-    transition: all .3s;
+    transition: all .5s, margin 0s, transform 0s;
     border: none;
     padding: 0;
     width: var(--width);
     height: var(--height);
+    transform: translate(-50%, -50%);
+    margin-top: 50%;
+    margin-left: 50%;
+  }
+
+  .full-screen-container .card-container {
+    margin: 0;
+    transform: translate(0, 0);
   }
 
   .card {

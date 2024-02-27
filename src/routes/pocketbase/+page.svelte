@@ -4,7 +4,9 @@
   export let data: PageData;
 </script>
 
-<iframe src={`https://${data.url}`} title="Pocketbase" ></iframe>
+{#await data.url then url}
+  <iframe src={`https://${url}`} title="Pocketbase" ></iframe>
+{/await}
 
 <style>
   iframe {

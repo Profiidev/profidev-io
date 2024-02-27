@@ -5,7 +5,7 @@
   import { page } from "$app/stores";
   import { Permissions, checkPermission } from "$lib/permissions";
 
-  let open = false;
+  export let open = false;
   let closeBtnClass = "bx bx-menu";
   let closeBtn: HTMLElement;
   let onLoginPage = false;
@@ -37,7 +37,7 @@
     if(checkPermission(permissions, Permissions.Database)) {
       navEntries.push({ name: "Pocketbase", icon: "bx bx-data", link: "/pocketbase" });
     }
-    navEntries.push({ name: "Setting", icon: "bx bx-cog", link: "/settings" });
+    navEntries.push({ name: "Settings", icon: "bx bx-cog", link: "/settings" });
   };
 
   const toggleSidebar = () => {
@@ -212,7 +212,6 @@
     font-size: 15px;
     font-weight: 900;
     white-space: nowrap;
-    opacity: 0;
     pointer-events: none;
     border-radius: 12px;
     transition: all 0.4s ease;
@@ -220,9 +219,7 @@
   }
   .sidebar.open .profile .info .name,
   .sidebar.open .profile .info .group{
-    opacity: 1;
     pointer-events: auto;
-    transition: all 0.4s ease;
   }
   .sidebar.open .profile .info:hover .name,
   .sidebar.open .profile .info:hover .group{

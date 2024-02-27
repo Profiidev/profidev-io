@@ -129,7 +129,7 @@
     border-radius: 5px;
     border: none;
     outline: none;
-    transition: .4s ease-in-out;
+    transition: .4s ease-in-out, margin 0s;
     background-image: linear-gradient(163deg, #6d1fbb 0%, #4b0be6 100%);
     color: rgb(0, 0, 0);
   }

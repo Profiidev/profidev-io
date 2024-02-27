@@ -3,17 +3,17 @@ import { token } from "$lib/auth";
 import { get } from "svelte/store";
 
 export const load: PageLoad = ({ fetch, params }) => {
-  let res = fetch("https://api.profidev.io/iframe/pocketbase", {
+  let res = fetch("https://api.profidev.io/users/get", {
     headers: {
       Authorization: get(token),
     },
   })
     .then((res) => res.json())
-    .then((res) => res.url)
     .catch((e) => {
-      return { url: "" };
+      return [];
     });
+
   return {
-    url: res,
+    users: res,
   };
 };

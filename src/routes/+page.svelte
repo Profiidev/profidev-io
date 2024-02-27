@@ -74,7 +74,13 @@
       {/if}
       <Card size={size} id="apod" bind:currentFullScreen={currentFullScreen}>
         <div class="apod" style="--scaleW: {imageWidthScale}; --scaleH: {imageHeightScale};">
-          <img src={data.apod} alt="APOD" on:load={load} />
+          {#await data then data_loaded}
+            {#if data_loaded && data_loaded.media_type === "image"}
+              <img src={data_loaded.url} alt="APOD" on:load={load} />
+            {:else if data_loaded && data_loaded.media_type === "video"}
+              <iframe width="560" height="315" src={data_loaded.url} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            {/if}
+          {/await}
         </div>
       </Card>
     </div>

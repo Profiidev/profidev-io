@@ -2,18 +2,16 @@ import type { PageLoad } from "./$types";
 import { token } from "$lib/auth";
 import { get } from "svelte/store";
 
-export const load: PageLoad = async () => {
-  let res = await fetch("https://api.profidev.io/images/apod", {
+export const load: PageLoad = ({ fetch, params }) => {
+  let res = fetch("https://api.profidev.io/images/apod", {
     headers: {
       Authorization: get(token),
     },
   })
-    .then((res) => res.text())
+    .then((res) => res.json())
     .catch((e) => {
-      return "";
+      return {};
     });
-  
-  return {
-    apod: res,
-  };
+
+  return res;
 };
