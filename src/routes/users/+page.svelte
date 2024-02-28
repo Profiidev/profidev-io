@@ -18,6 +18,7 @@
     { label: "", width: 50 }
   ];
   let currentUser = { id: "", username: "", name: "", permissions: [] as string[], admin: false };
+  let isEdit = false;
   
   const convertPermissions = (permissions: number) => {
     let permissionArray: string[] = [];
@@ -43,7 +44,14 @@
       ...user,
       permissions: Object.keys(Permissions).filter(key => !isNaN(Number(key)) && Number(key) !== Permissions.Admin && (user.permissions & Number(key)) === Number(key)),
       admin: isAdmin(user.permissions),
-    }
+    };
+    isEdit = true;
+  };
+
+  const createUser = () => {
+    modalVisible = true;
+    currentUser = { id: "", username: "", name: "", permissions: [], admin: false };
+    isEdit = false;
   };
 
   const updatedUsers = async () => {
@@ -59,45 +67,71 @@
 
     data.users = res;
   };
+
+  const deleteUser = async (user: { id: string }) => {
+    fetch("https://api.profidev.io/users/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: get(token),
+      },
+      body: JSON.stringify({ id: user.id }),
+    })
+      .then((res) => updatedUsers());
+  };
 </script>
 
 {#if $isValid}
-  <div class="container">
-    <div class="columns header">
-      {#each columns as column}
-        <div class="column head" style="width: {column.width}px;">
-          {column.label}
+  <div class="container-background">
+    <div class="container">
+      <div class="columns header">
+        <div style="width: 20px;"></div>
+        {#each columns as column}
+          <div class="column head" style="width: {column.width}px;">
+            {column.label}
+          </div>
+        {/each}
+        <div class="column head" style="width: {columns[4].width}px;">
+          <button class="button" on:click={createUser} style="color: var(--success-color);">
+            <i class='bx bx-plus'></i>
+          </button>
         </div>
-      {/each}
+      </div>
+      {#await data.users}
+        <Loader />
+      {:then users}
+        {#each users as user}
+          <div class="columns rows">
+            <div style="width: 20px;"></div>
+            <div class="column row" style="width: {columns[0].width}px;">
+              {user.username}
+            </div>
+            <div class="column row" style="width: {columns[1].width}px;">
+              {user.name}
+            </div>
+            <div class="column row" style="width: {columns[2].width}px;">
+              {convertPermissions(user.permissions)}
+            </div>
+            <div class="column row" style="width: {columns[3].width}px;">
+              {isAdmin(user.permissions) ? "Yes" : "No"}
+            </div>
+            <div class="column" style="width: {columns[4].width}px; color: var(--text-color2);">
+              <button class="button" on:click={() => editUser(user)}>
+                <i class='bx bx-edit-alt'></i>
+              </button>
+            </div>
+            <div class="column" style="width: {columns[4].width}px; color: var(--error-color);">
+              <button class="button" on:click={() => deleteUser(user)}>
+                <i class='bx bx-trash'></i>
+              </button>
+            </div>
+          </div>
+        {/each}
+      {/await}
     </div>
-    {#await data.users}
-      <Loader />
-    {:then users}
-      {#each users as user}
-        <div class="columns">
-          <div class="column row" style="width: {columns[0].width}px;">
-            {user.username}
-          </div>
-          <div class="column row" style="width: {columns[1].width}px;">
-            {user.name}
-          </div>
-          <div class="column row" style="width: {columns[2].width}px;">
-            {convertPermissions(user.permissions)}
-          </div>
-          <div class="column row" style="width: {columns[3].width}px;">
-            {isAdmin(user.permissions) ? "Yes" : "No"}
-          </div>
-          <div class="column" style="width: {columns[4].width}px;">
-            <button class="button" on:click={() => editUser(user)}>
-              <i class='bx bx-edit-alt'></i>
-            </button>
-          </div>
-        </div>
-      {/each}
-    {/await}
   </div>
   {#if modalVisible}
-    <UsereditModal bind:data={currentUser} bind:modalVisible={modalVisible} update={updatedUsers}/>
+    <UsereditModal bind:data={currentUser} bind:modalVisible={modalVisible} update={updatedUsers} edit={isEdit}/>
   {/if}
 {:else}
   <div class="not-container">
@@ -106,20 +140,31 @@
 {/if}
 
 <style>
+  .container-background {
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
+    margin: 20px;
+    background-color: var(--background-color2);
+    border-radius: 20px;
+    display: flex;
+
+  }
+
   .container {
+    margin: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: calc(100% - 80px);
-    height: calc(100% - 80px);
-    margin: 40px;
     font-weight: 600;
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
     font-size: 18px;
     box-sizing: border-box;
     background-image: linear-gradient(var(--primary-color1) 0%, var(--primary-color3) 100%);
     background-clip: text;
     background-attachment: fixed;
     color: transparent;
+    overflow-y: auto;
   }
 
   .columns {
@@ -129,6 +174,11 @@
     height: 50px;
   }
 
+  .rows:hover {
+    background-color: var(--background-color);
+    border-radius: 10px;
+  }
+
   .column {
     display: flex;
     justify-content: left;
@@ -136,7 +186,7 @@
     height: 100%;
   }
 
-  .column:last-child {
+  .column:nth-child(5) {
     justify-content: center;
     margin-left: auto;
   }
@@ -146,7 +196,7 @@
   }
 
   .header {
-    border-bottom: 3px solid var(--background-color2);
+    border-bottom: 3px solid var(--background-color3);
   }
 
   .head {
@@ -174,8 +224,8 @@
     height: 30px;
     cursor: pointer;
     border-radius: 10px;
-    border: 3px solid var(--background-color2);
-    background-color: transparent;
+    border: 3px solid var(--background-color3);
+    background-color: var(--background-color3);
     color: inherit;
   }
 </style>

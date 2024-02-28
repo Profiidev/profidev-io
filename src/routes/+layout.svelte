@@ -48,7 +48,8 @@
     --primary-color3: #3700ff;
     --secondary-color3: #1a0077;
 
-    --error-color: #ff0000;
+    --error-color: #bd0000;
+    --success-color: #00bd00;
 
     --background-color: #161819;
     --background-color2: #0F1011;
@@ -67,5 +68,6 @@
     left: 78px;
     background-color: var(--background-color);
     border: none;
+    padding: 0;
   }
 </style>

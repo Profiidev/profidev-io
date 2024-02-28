@@ -16,6 +16,7 @@
   };
   export let modalVisible = false;
   export let update = () => {};
+  export let edit = false;
 
   let error = "";
   let changePassowrd = false;
@@ -23,12 +24,16 @@
   const permissionKeys = Object.keys(Permissions).filter(key => !isNaN(Number(key))).map(key => Number(key)).filter(key => key !== Permissions.Admin);
 
   const save = () => {
-    if(data.password !== data.confirmPassword && changePassowrd) {
+    if(data.password !== data.confirmPassword && (changePassowrd || !edit)) {
       error = "Passwords do not match";
       return;
     }
+    if((data.password?.length || 0) < 8 && (changePassowrd || !edit)) {
+      error = "Password must be at least 8 characters long";
+      return;
+    }
     
-    fetch("https://api.profidev.io/users/update", {
+    fetch(`https://api.profidev.io/users/${edit ? "update" : "create"}`, {
       method: "POST",
       headers: {
         Authorization: get(token),
@@ -39,8 +44,9 @@
         username: data.username,
         name: data.name,
         permissions: data.permissions.reduce((acc, key) => acc | Number(key), 0) | (data.admin ? Permissions.Admin : 0),
-        password: changePassowrd ? data.password : undefined,
-        passwordConfirm: changePassowrd ? data.confirmPassword : undefined,
+        password: (changePassowrd || !edit) ? data.password : undefined,
+        passwordConfirm: (changePassowrd || !edit) ? data.confirmPassword : undefined,
+        verified: true,
       })
     })
       .then((res) => {
@@ -69,7 +75,7 @@
   <div class="modal-background">
     <div class="modal">
       <form class="form" on:submit|preventDefault={save}>
-        <p class="heading">User Edit</p>
+        <p class="heading">User {edit ? "Edit" : "Create"}</p>
         <div class="field">
           <input class="input-field" type="text" required placeholder="Username" bind:value={data.username} on:focus={inputFocus}>
         </div>
@@ -84,8 +90,10 @@
           </Multiselect>
         </div>
         <Toggle bind:checked={data.admin} onFocus={inputFocus} title={"Admin"}/>
-        <Toggle bind:checked={changePassowrd} onFocus={inputFocus} title={"Change Password"}/>
-        {#if changePassowrd}
+        {#if edit}
+          <Toggle bind:checked={changePassowrd} onFocus={inputFocus} title={"Change Password"}/>
+        {/if}
+        {#if changePassowrd || !edit}
           <div class="field">
             <input class="input-field" type="password" required placeholder="New Password" bind:value={data.password} on:focus={inputFocus}>
           </div>
