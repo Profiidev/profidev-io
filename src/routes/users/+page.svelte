@@ -83,7 +83,7 @@
 
 {#if $isValid}
   <div class="container-background">
-    <div class="container">
+    <div class="container scrollbar">
       <div class="columns header">
         <div style="width: 20px;"></div>
         {#each columns as column}

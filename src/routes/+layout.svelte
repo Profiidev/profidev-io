@@ -70,4 +70,22 @@
     border: none;
     padding: 0;
   }
+
+	:global(.scrollbar::-webkit-scrollbar) {
+		width: 10px;
+	}
+
+	:global(.scrollbar::-webkit-scrollbar-track) {
+		background: var(--background-color);
+	}
+
+	:global(.scrollbar::-webkit-scrollbar-thumb) {
+		background-color: var(--background-color3);
+		border-radius: 14px;
+		border: 4px solid var(--color-primary);
+	}
+
+	:global(.scrollbar::-webkit-scrollbar-thumb:hover) {
+		border: 2px solid var(--background-color);
+	}
 </style>

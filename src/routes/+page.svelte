@@ -20,20 +20,11 @@
   let imageHeightScale = 1;
   let mounted = false;
   let currentFullScreen = '';
-  let lastUpdate = 0;
   
-  const updateData = () => {
-    getCpuDatasets(true).then((data) => {
-      timeLabels = data.timeLabels;
-      cpuDatasets = data.cpuDatasets;
-    });
-    getMemoryDataset().then((data) => {
-      memoryDatasets = data;
-    });
-    clearTimeout(lastUpdate);
-    lastUpdate = setTimeout(updateData, 60000);
-  }
-  ;
+  const getCpuData = async (start: number, end: number, step: number) => {
+    return getCpuDatasets(true, start, end, step);
+  };
+  
   const load = (img: any) => {
     let width = img.target.naturalWidth;
     let height = img.target.naturalHeight;
@@ -53,9 +44,8 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
     mounted = true;
-    updateData();
   });
 </script>
 
@@ -63,13 +53,13 @@
 
 {#if mounted}
   {#if $isValid}
-    <div class="conatiner">
+    <div class="conatiner scrollbar">
       {#if checkPermission($currentUser?.permissions, Permissions.Metrics)}
         <Card size={size} id="cpu" bind:currentFullScreen={currentFullScreen}>
-          <LineChart datasets={cpuDatasets} labels={timeLabels} header="Cpu Usage" />
+          <LineChart header="Cpu Usage" load={getCpuData} />
         </Card>
         <Card size={size} id="memory" bind:currentFullScreen={currentFullScreen}>
-          <LineChart datasets={memoryDatasets} labels={timeLabels} header="Memory Usage" />
+          <LineChart header="Memory Usage" load={getMemoryDataset} />
         </Card>  
       {/if}
       <Card size={size} id="apod" bind:currentFullScreen={currentFullScreen}>
