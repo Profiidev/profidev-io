@@ -15,7 +15,7 @@
 
   const doubleClick = () => {
     if (lastClick + 300 > Date.now()) {
-      toogleFullScreen();
+      currentFullScreen = id;
     }
     lastClick = Date.now();
   }

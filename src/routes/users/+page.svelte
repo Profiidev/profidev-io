@@ -55,7 +55,7 @@
   };
 
   const updatedUsers = async () => {
-    const res = fetch("https://api.profidev.io/users/get", {
+    const res = fetch("https://api.profidev.io/users", {
       headers: {
         Authorization: get(token),
       },
@@ -69,8 +69,8 @@
   };
 
   const deleteUser = async (user: { id: string }) => {
-    fetch("https://api.profidev.io/users/delete", {
-      method: "POST",
+    fetch("https://api.profidev.io/users", {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: get(token),

@@ -33,8 +33,8 @@
       return;
     }
     
-    fetch(`https://api.profidev.io/users/${edit ? "update" : "create"}`, {
-      method: "POST",
+    fetch(`https://api.profidev.io/users`, {
+      method: edit ? "PATCH" : "POST",
       headers: {
         Authorization: get(token),
         "Content-Type": "application/json",

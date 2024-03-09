@@ -6,7 +6,7 @@ import { Permissions, checkPermission } from "$lib/permissions";
 export const load: PageLoad = ({ fetch, params }) => {
   if (!checkPermission(get(currentUser)?.permissions, Permissions.Users)) return { status: 403 };
 
-  let res = fetch("https://api.profidev.io/users", {
+  let res = fetch("https://api.profidev.io/cloud/dirs", {
     headers: {
       Authorization: get(token),
     },
@@ -17,6 +17,6 @@ export const load: PageLoad = ({ fetch, params }) => {
     });
 
   return {
-    users: res,
+    content: res,
   };
 };
