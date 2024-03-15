@@ -60,7 +60,7 @@ You can preview the production build with `npm run preview`.
     fetch('http://localhost:8080/cloud/download/test', {
       method: 'GET',
       headers: {
-        "Authorization" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJfcGJfdXNlcnNfYXV0aF8iLCJleHAiOjE3MDk5ODA3MDUsImlkIjoiaTFjbG93MHBrMTg4OWR4IiwidHlwZSI6ImF1dGhSZWNvcmQifQ.oe56If2nkNb3oCdjyPBIeqOl_QDce9JnAibWaaOEARM"
+        "Authorization" : ""
       }
     }).then(response => response.blob()).then(async blob => {
       const arrayBuffer = await new Response(blob).arrayBuffer();
@@ -80,7 +80,7 @@ You can preview the production build with `npm run preview`.
       fetch('http://localhost:8080/cloud/upload/test', {
         method: 'PUT',
         headers: {
-          "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJfcGJfdXNlcnNfYXV0aF8iLCJleHAiOjE3MDk5ODA3MDUsImlkIjoiaTFjbG93MHBrMTg4OWR4IiwidHlwZSI6ImF1dGhSZWNvcmQifQ.oe56If2nkNb3oCdjyPBIeqOl_QDce9JnAibWaaOEARM"
+          "Authorization": ""
         },
         body: gzip(arrayBuffer as ArrayBuffer, { level: 4 })
       });
