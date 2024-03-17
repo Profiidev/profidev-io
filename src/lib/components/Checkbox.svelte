@@ -1,9 +1,12 @@
 <script lang="ts">
+  export let checked = false;
+  export let onClick = (e: any) => {};
+
   let random = Math.random().toString(36).substring(7);
 </script>
 
-<div class="container">
-  <input style="display: none;" id="{random}" type="checkbox" class="cbx" />
+<button class="container" on:click|stopPropagation>
+  <input style="display: none;" id="{random}" type="checkbox" class="cbx" bind:checked={checked} on:click={onClick} />
   <label class="check" for="{random}">
     <svg viewBox="0 0 18 18" height="18px" width="18px">
       <path
@@ -12,9 +15,19 @@
       <polyline points="1 9 7 14 15 4"></polyline>
     </svg>
   </label>
-</div>
+</button>
 
 <style>
+  .container {
+    background: inherit;
+    color: inherit;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
   .check {
     cursor: pointer;
     position: relative;
@@ -28,10 +41,8 @@
   .check:before {
     content: "";
     position: absolute;
-    top: -15px;
-    left: -15px;
-    width: 48px;
-    height: 48px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: rgba(34, 50, 84, 0.03);
     opacity: 0;
@@ -53,11 +64,13 @@
   .check svg path {
     stroke-dasharray: 60;
     stroke-dashoffset: 0;
+    transition: all 0.3s linear;
   }
 
   .check svg polyline {
     stroke-dasharray: 22;
     stroke-dashoffset: 66;
+    transition: all 0.3s linear;
   }
 
   .check:hover:before {

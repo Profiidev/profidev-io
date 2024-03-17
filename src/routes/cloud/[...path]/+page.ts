@@ -4,9 +4,10 @@ import { get } from "svelte/store";
 import { Permissions, checkPermission } from "$lib/permissions";
 
 export const load: PageLoad = ({ fetch, params }) => {
-  if (!checkPermission(get(currentUser)?.permissions, Permissions.Users)) return { status: 403 };
+  if (!checkPermission(get(currentUser)?.permissions, Permissions.Cloud)) return { status: 403 };
 
-  let res = fetch("https://api.profidev.io/cloud/dirs", {
+  let add = params.path ? "/" + params.path : "";
+  let res = fetch("https://api.profidev.io/cloud/dirs" + add, {
     headers: {
       Authorization: get(token),
     },
