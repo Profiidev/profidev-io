@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { PageData } from "../../$types";
-  import { onMount } from "svelte";
   import Loader from "$lib/components/Loader.svelte";
   import { isValid } from "$lib/auth";
   import Checkbox from "$lib/components/Checkbox.svelte";
@@ -53,6 +52,14 @@
       e.target.checked = !checked.includes(file.name);
       checkSingle(e, file);
     }
+  };
+
+  const deleteFiles = () => {
+    const toDelete = checked.map((name) => files.find((file) => file.name === name));
+  };
+
+  const deleteFile = (file: any) => {
+    console.log(file);
   };
 </script>
 

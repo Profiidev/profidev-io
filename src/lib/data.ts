@@ -4,6 +4,8 @@ import type { Dataset } from "./types";
 import { DateTime } from "luxon";
 
 const getMetrics = async (metrics: string, start?: number, end?: number, step?: number) => {
+  let utc = new Date().getTimezoneOffset() * 60000;
+  console.log(Date.now() + utc)
   return fetch("https://api.profidev.io/metrics", {
     method: "POST",
     headers: {
@@ -11,8 +13,8 @@ const getMetrics = async (metrics: string, start?: number, end?: number, step?: 
       Authorization: get(token),
     },
     body: JSON.stringify({
-      start: start || Date.now() - 3600000,
-      end: end || Date.now(),
+      start: start || Date.now() + utc - 3600000,
+      end: end || Date.now() + utc,
       step: step || 1,
       metrics: metrics,
     }),

@@ -56,7 +56,7 @@
     });
     
     const data = await load(start, end, step);
-    console.log(data);
+    
     if(chart.data.labels.length === 0) {
       chart.data.labels = data.labels.map(label => convertTime(label));
     } else {
@@ -72,7 +72,6 @@
         });
       });
     }
-    console.log(chart.data.datasets);
 
     if(chart.options.scales !== undefined && chart.options.scales.x !== undefined) {
       //@ts-expect-error
