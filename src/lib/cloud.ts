@@ -48,13 +48,17 @@ export const deleteDir = async (path: string) => {
 }
 
 export const downloadSingleFile = async (path: string) => {
-  let res = fetch("https://api.profidev.io/cloud/file/" + path, {
+  let res = fetch("https://api.profidev.io/cloud/files/" + path, {
     headers: {
       Authorization: get(token),
     },
   })
-    .then((res) => res.blob())
+    .then((res) => {
+      if(res.status !== 200) throw new Error("Error");
+      return res.blob();
+    })
     .then(async (blob) => {
+      if(blob.size === 0) throw new Error("Error");
       const arrayBuffer = await new Response(blob).arrayBuffer();
       const url = window.URL.createObjectURL(new Blob([ungzip(arrayBuffer)]));
       const a = document.createElement("a");
@@ -77,12 +81,16 @@ export const downloadMultipleFiles = async (paths: string[]) => {
       "Content-Type": "application/json",
       Authorization: get(token),
     },
-    body: JSON.stringify({ paths }),
+    body: JSON.stringify(paths),
   })
-    .then((res) => res.blob())
+    .then((res) => {
+      if(res.status !== 200) throw new Error("Error");
+      return res.blob();
+    })
     .then(async (blob) => {
+      if(blob.size === 0) throw new Error("Error");
       const arrayBuffer = await new Response(blob).arrayBuffer();
-      const url = window.URL.createObjectURL(new Blob([ungzip(arrayBuffer)]));
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "files.zip";
@@ -143,19 +151,19 @@ export const renameDir = async (path: string, newPath: string) => {
   return res;
 }
 
-export const uploadFile = async (path: string, file: File, callback: (res: any) => {}) => {
+export const uploadFile = async (path: string, file: File, callback: (res: any) => void) => {
   const fileReader = new FileReader();
   fileReader.onload = async (e) => {
     const arrayBuffer = e.target?.result;
-    let res = fetch("https://api.profidev.io/cloud/file/" + path, {
+    let add = path ? "/" + path : "";
+    add += "/" + file.name;
+    let res = await fetch("https://api.profidev.io/cloud/files" + add, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: get(token),
       },
-      body: JSON.stringify({
-        file: gzip(arrayBuffer as ArrayBuffer, { level: 4 })
-      })
+      body: gzip(arrayBuffer as ArrayBuffer, { level: 4 })
     })
       .then((res) => res.json())
       .catch((e) => {
@@ -172,6 +180,24 @@ export const checkIfExist = async (path: string) => {
     headers: {
       Authorization: get(token),
     },
+  })
+    .then((res) => res.json())
+    .catch((e) => {
+      return undefined;
+    });
+  
+  return res;
+}
+
+export const checkIfExistMultiple = (path: string, files: string[]) => {
+  let toAdd = path ? "/" + path : "";
+  let res = fetch("https://api.profidev.io/cloud/check_multiple" + toAdd, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: get(token),
+    },
+    body: JSON.stringify(files),
   })
     .then((res) => res.json())
     .catch((e) => {

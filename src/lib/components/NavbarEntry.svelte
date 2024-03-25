@@ -7,7 +7,7 @@
   export let open = false;
 
   let highlighted = false;
-  $: highlighted = $page.route !== null && $page.route.id === link;
+  $: highlighted = $page.route !== null && (($page.route.id?.startsWith(link) ?? false) && link !== "/") || ($page.route.id === "/" && link === "/");
 </script>
 
 <li class:open={open}>

@@ -5,7 +5,6 @@ import { DateTime } from "luxon";
 
 const getMetrics = async (metrics: string, start?: number, end?: number, step?: number) => {
   let utc = new Date().getTimezoneOffset() * 60000;
-  console.log(Date.now() + utc)
   return fetch("https://api.profidev.io/metrics", {
     method: "POST",
     headers: {

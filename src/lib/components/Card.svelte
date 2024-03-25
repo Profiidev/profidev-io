@@ -53,6 +53,8 @@
     width: var(--width);
     height: var(--height);
     margin: 20px;
+    overflow: hidden;
+    padding: 0;
   }
 
   .full-screen-container {
@@ -96,7 +98,7 @@
     background-color: var(--background-color2);
     border-radius: 20px;
     transition: all .2s;
-    transform: scale(1.01);
+    transform: scale(1.001);
     width: calc(100% - 20px);
     height: calc(100% - 20px);
     padding: 10px;
