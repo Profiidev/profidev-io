@@ -59,8 +59,7 @@ export const downloadSingleFile = async (path: string) => {
     })
     .then(async (blob) => {
       if(blob.size === 0) throw new Error("Error");
-      const arrayBuffer = await new Response(blob).arrayBuffer();
-      const url = window.URL.createObjectURL(new Blob([ungzip(arrayBuffer)]));
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = path.split("/").pop() || "file";
@@ -89,7 +88,6 @@ export const downloadMultipleFiles = async (paths: string[]) => {
     })
     .then(async (blob) => {
       if(blob.size === 0) throw new Error("Error");
-      const arrayBuffer = await new Response(blob).arrayBuffer();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -163,7 +161,7 @@ export const uploadFile = async (path: string, file: File, callback: (res: any) 
         "Content-Type": "application/json",
         Authorization: get(token),
       },
-      body: gzip(arrayBuffer as ArrayBuffer, { level: 4 })
+      body: arrayBuffer,
     })
       .then((res) => res.json())
       .catch((e) => {
