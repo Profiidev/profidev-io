@@ -1,0 +1,1 @@
+export const SPEED_INTERPOLATION_STEPS = 100;

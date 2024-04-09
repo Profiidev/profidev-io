@@ -10,9 +10,11 @@
   import { getFiles } from "$lib/cloud";
   import Dialog from "$lib/components/Dialog.svelte";
   import Button from "$lib/components/Button.svelte";
+  import ProgressBar from "$lib/components/ProgressBar.svelte";
+  import type { FileData, FileUpload } from "$lib/types";
 
   export let data: PageData;
-  let files: File[] = [];
+  let files: FileData[] = [];
   let checked: string[] = [];
   let modalVisible = false;
   let modalType: "confirm" | "rename" | "create" = "confirm";
@@ -20,12 +22,10 @@
   let modalNewName = ""
   let modalConfirm = () => {};
   let dragOver = false;
-
-  type File = {
-    name: string;
-    dir: boolean;
-    write: boolean;
-  };
+  let progressVisible = false;
+  let progress = 0;
+  let progressText = "Uploading...";
+  let progressSpeed = "0 KB/s";
 
   $: data, newData();
 
@@ -34,6 +34,16 @@
     if (!a.dir && b.dir) return 1;
     return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
   });
+
+  const convertProgressSpeed = (speed: number) => {
+    let speedString = speed.toFixed(2) + " B/s";
+    if (speed > 1024 * 1024) {
+      speedString = (speed / (1024 * 1024)).toFixed(2) + " MB/s";
+    } else if (speed > 1024) {
+      speedString = (speed / 1024).toFixed(2) + " KB/s";
+    }
+    return speedString;
+  }
 
   const newData = () => {
     if (data.content)
@@ -46,7 +56,7 @@
     checked = e.target.checked ? files.map((file) => file.name) : [];
   };
 
-  const checkSingle = (e: any, file: File) => {
+  const checkSingle = (e: any, file: FileData) => {
     if (e.target.checked) {
       checked = [...checked, file.name];
     } else {
@@ -54,7 +64,7 @@
     }
   };
 
-  const fileClick = (e: any, file: File) => {
+  const fileClick = (e: any, file: FileData) => {
     if (file.dir) {
       let newPath = "";
       if (file.name === "..") {
@@ -71,12 +81,12 @@
     }
   };
 
-  const deleteFiles = async (file?: File) => {
-    let toDelete: File[] = [];
+  const deleteFiles = async (file?: FileData) => {
+    let toDelete: FileData[] = [];
     if (file) {
       toDelete.push(file);
     } else {
-      toDelete = checked.map((name) => files.find((file) => file.name === name)) as File[];
+      toDelete = checked.map((name) => files.find((file) => file.name === name)) as FileData[];
     }
     modalType = "confirm";
     modalText = `Are you sure you want to delete ${toDelete.length} file${toDelete.length > 1 ? "s" : ""}?`;
@@ -84,8 +94,10 @@
     modalConfirm = () => {
       modalVisible = false;
       let done = 0;
+      let path = $page.url.pathname.split("/").slice(2).join("/");
+      path = path === "" ? "/" : path + "/";
       for (let i = 0; i < toDelete.length; i++) {
-        deleteFile(toDelete[i]).then(() => {
+        deleteFile(toDelete[i], path).then(() => {
           done++;
           if(done === toDelete.length) {
             reload();
@@ -96,24 +108,50 @@
     };
   };
 
-  const deleteFile = async (file: any) => {
+  const deleteFile = async (file: any, path: string) => {
     if(file.dir) {
-      await deleteDir(file.name);
+      await deleteDir(path + file.name);
     } else {
-      await deleteCloudFile(file.name);
+      await deleteCloudFile(path + file.name);
     }
   };
 
   const downloadFiles = () => {
     const toDownload = checked.map((name) => files.find((file) => file.name === name)).map((file) => file?.name);
-    downloadMultipleFiles(toDownload as string[]);
+    let path = $page.url.pathname.split("/").slice(2).join("/");
+    progressVisible = true;
+    progressText = "Downloading...";
+    progressSpeed = "0 KB/s";
+    progress = 0;
+    downloadMultipleFiles(path, toDownload as string[], (newProgress, speed) => {
+      progress = newProgress;
+      progressSpeed = convertProgressSpeed(speed);
+    }).then(() => {
+      progressVisible = false;
+    });
   };
 
   const downloadFile = (file: any) => {
+    let path = $page.url.pathname.split("/").slice(2).join("/");
+    progressVisible = true;
+    progressText = "Downloading...";
+    progressSpeed = "0 KB/s";
+    progress = 0;
+
     if(file.dir) {
-      downloadMultipleFiles([file.name]);
+      downloadMultipleFiles(path, [file.name], (newProgress, speed) => {
+        progress = newProgress;
+        progressSpeed = convertProgressSpeed(speed);
+      }).then(() => {
+        progressVisible = false;
+      });
     } else {
-      downloadSingleFile(file.name);
+      downloadSingleFile(path + "/" + file.name, (newProgress, speed) => {
+        progress = newProgress;
+        progressSpeed = convertProgressSpeed(speed);
+      }).then(() => {
+        progressVisible = false;
+      });
     }
   };
 
@@ -145,14 +183,39 @@
     input.click();
   }
 
-  const uploadFilesConfirmed = (path: string, files: FileList) => {
+  const uploadFilesConfirmed = (path: string, fileList: FileList) => {
+    let files = Array.from(fileList);
+
     let done = 0;
-    for (let i = 0; i < files.length; i++) {
-      uploadCloudFile(path, files[i], (res) => {
+    let filesProgress: {
+      [key: string]: number
+    } = {};
+    let totalSize = files.reduce((a, b) => a + b.size, 0);
+
+    progressVisible = true;
+    progressText = "Uploading...";
+    progressSpeed = "0 KB/s";
+    progress = 0;
+    let lastSpeedValues: number[] = [];
+
+    files.forEach(file => {
+      let currentSize = file.size;
+      let key = path + file.name;
+
+      uploadCloudFile(path, file, (newProgress, speed) => {
+        filesProgress[key] = newProgress * currentSize / totalSize;
+        progress = Object.values(filesProgress).reduce((a, b) => a + b, 0);
+        lastSpeedValues.push(speed);
+        if(lastSpeedValues.length > files.length) lastSpeedValues.shift();
+        progressSpeed = convertProgressSpeed(lastSpeedValues.reduce((a, b) => a + b, 0) / lastSpeedValues.length);
+      }).then((res) => {
         done++;
-        if (done === files.length) reload();
+        if (done === files.length) {
+          reload();
+          progressVisible = false;
+        };
       });
-    }
+    })
   }
 
   const createFolder = () => {
@@ -162,13 +225,92 @@
     modalVisible = true;
     modalConfirm = () => {
       modalVisible = false;
-      createDir($page.url.pathname.split("/").slice(2).join("/") + "/" + modalNewName).then(() => reload());
+      let path = $page.url.pathname.split("/").slice(2).join("/");
+      path = path === "" ? "/" : path + "/";
+      createDir(path + "/" + modalNewName).then(() => reload());
     };
   }
 
-  const drop = (e: any) => {
+  const drop = async (e: any) => {
     dragOver = false;
-    console.log(e.dataTransfer.files);
+    
+    let items = e.dataTransfer.items;
+    let fileItems = []
+    for (let i = 0; i < items.length; i++) {
+      let item = items[i];
+      if (item.kind === "file") {
+        let file = item.webkitGetAsEntry();
+        if (file) {
+          fileItems.push(file);
+        }
+      }
+    }
+
+    let files: FileUpload[] = [];
+    for (let i = 0; i < fileItems.length; i++) {
+      let path = $page.url.pathname.split("/").slice(2).join("/");
+      path = path === "" ? "" : path + "/";
+      let dir_files = await traverse(fileItems[i], path);
+      files = [...files, ...dir_files];
+    }
+
+    let done = 0;
+    let filesProgress: {
+      [key: string]: number
+    } = {};
+    let totalSize = files.reduce((a, b) => a + (b.file ? b.file.size : 0), 0);
+    let filesLength = files.reduce((a, b) => a + (b.file ? 1 : 0), 0);
+
+    progressVisible = true;
+    progressText = "Uploading...";
+    progressSpeed = "0 KB/s";
+    progress = 0;
+    let lastSpeedValues: number[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      if(files[i].isDir) {
+        createDir(files[i].path);
+      } else {
+        let fileData = files[i];
+        let file = fileData.file as File;
+        let currentSize = file.size;
+        let key = fileData.path + file.name;
+
+        uploadCloudFile(files[i].path, file, (newProgress, speed) => {
+          filesProgress[key] = newProgress * currentSize / totalSize;
+          progress = Object.values(filesProgress).reduce((a, b) => a + b, 0);
+          lastSpeedValues.push(speed);
+         if(lastSpeedValues.length > files.length) lastSpeedValues.shift();
+          progressSpeed = convertProgressSpeed(lastSpeedValues.reduce((a, b) => a + b, 0) / lastSpeedValues.length);
+        }).then((res) => {
+          done++;
+          if (done === filesLength) {
+            reload();
+            progressVisible = false;
+          };
+        });
+      }
+    }
+  }
+
+  const traverse = async (entry: any, path: string) => {
+    let files: FileUpload[] = [];
+    if (entry.isFile) {
+      let file: any = await new Promise((resolve) => entry.file(resolve));
+      files.push({ path, file, isDir: false });
+    } else if (entry.isDirectory) {
+      let reader = entry.createReader();
+      let dirPath = path === "" ? entry.name : path + "/" + entry.name;
+      files.push({ path: dirPath, file: undefined, isDir: true });
+
+      let entries: any = await new Promise((resolve) => reader.readEntries(resolve));
+      for (let i = 0; i < entries.length; i++) {
+        let dir_path = path === "" ? "" : path + "/";
+        let dir_files = await traverse(entries[i], dir_path + entry.name);
+        files = [...files, ...dir_files];
+      }
+    }
+    return files;
   }
 
   const reload = async () => {
@@ -226,6 +368,11 @@
           </div>
         {/each}
       {/await}
+      {#if progressVisible}
+        <div class="progress-container">
+          <ProgressBar progress={progress} text={progressText} progressSpeed={progressSpeed} />
+        </div>
+      {/if}
     </div>
   </div>
   {#if modalVisible}
@@ -271,13 +418,13 @@
   }
 
   .container {
-    margin: 20px;
+    margin: 20px 20px 15px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     font-weight: 600;
     width: calc(100% - 30px);
-    height: calc(100% - 40px);
+    height: calc(100% - 35px);
     font-size: 18px;
     box-sizing: border-box;
     background-image: linear-gradient(var(--primary-color1) 0%, var(--primary-color3) 100%);
@@ -422,5 +569,15 @@
 
   .drag-over {
     background-color: var(--background-color3);
+  }
+
+  .progress-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    width: 100%;
+    height: 35px;
+    padding-top: 10px;
   }
 </style>
