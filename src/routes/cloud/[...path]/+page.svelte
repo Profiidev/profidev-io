@@ -233,7 +233,7 @@
 
   const drop = async (e: any) => {
     dragOver = false;
-    
+
     let items = e.dataTransfer.items;
     let fileItems = []
     for (let i = 0; i < items.length; i++) {
@@ -266,7 +266,7 @@
     progressSpeed = "0 KB/s";
     progress = 0;
     let lastSpeedValues: number[] = [];
-    
+
     for (let i = 0; i < files.length; i++) {
       if(files[i].isDir) {
         createDir(files[i].path);

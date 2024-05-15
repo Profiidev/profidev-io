@@ -66,7 +66,7 @@
   .toggle-switch input[type="checkbox"]:checked + .toggle-switch-background .toggle-switch-handle {
     transform: translateX(30px);
   }
-  
+
   .toggle-field {
     display: flex;
     align-items: center;

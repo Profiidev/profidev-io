@@ -21,4 +21,4 @@ export type FileUpload = {
   path: string;
   isDir: boolean;
   file: File | undefined;
-}
+};

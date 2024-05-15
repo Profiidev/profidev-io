@@ -118,7 +118,7 @@
   </button>
 
   <select bind:this={slot} multiple class="hidden"><slot></slot></select>
-  
+
   {#if showOptions}
     <button class="options" type="button" transition:fly="{{duration: 200, y: 5}}" on:mousedown|preventDefault={handleOptionMousedown}>
       {#each filtered as option}
@@ -146,7 +146,7 @@
     border: none;
     padding: 0;
   }
-  .tokens::after {    
+  .tokens::after {
     background: none repeat scroll 0 0 transparent;
     bottom: -1px;
     content: "";
@@ -158,9 +158,9 @@
     transition: width 0.3s ease 0s, left 0.3s ease 0s;
     width: 0;
   }
-  .tokens.showOptions::after { 
-    width: 100%; 
-    left: 0; 
+  .tokens.showOptions::after {
+    width: 100%;
+    left: 0;
   }
   .token {
     align-items: center;

@@ -43,7 +43,7 @@
       //@ts-expect-error
       chart.options.scales.x.time.unit = unit;
     }
-    
+
     let labels = chart.data.labels.length;
     for(let i = 0; i < labels; i++) {
       chart.data.labels.pop();
@@ -54,15 +54,15 @@
         dataset.data.pop();
       }
     });
-    
+
     const data = await load(start, end, step);
-    
+
     if(chart.data.labels.length === 0) {
       chart.data.labels = data.labels.map(label => convertTime(label));
     } else {
       data.labels.forEach(label => convertTime(label));
     }
-    
+
     if(chart.data.datasets.length === 0) {
       chart.data.datasets = data.datasets;
     } else {
@@ -79,7 +79,7 @@
       //@ts-expect-error
       chart.options.scales.x.max = new Date(end);
     }
-    
+
     chart.update();
   };
 

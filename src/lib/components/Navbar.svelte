@@ -11,7 +11,7 @@
   let onLoginPage = false;
 
   $: onLoginPage = $page.route !== null && $page.route.id === "/login";
-  
+
   let navEntries: {
     name: string;
     icon: string;
@@ -50,8 +50,12 @@
   }
 
   const gotoLogin = () => {
-    pb.authStore.clear();
-    goto("/login");
+    if(open) {
+      pb.authStore.clear();
+      goto("/login");
+    } else {
+      goto("/account");
+    }
   }
 </script>
 
@@ -71,8 +75,8 @@
       <span class="name">{$isValid ? $currentUser?.name : "Not Loged in"}</span>
       <span class="group">{$isValid ? $currentUser?.permissions === 0 ? "Admin" : "User" : ""}</span>
     </a>
-    <button class="bx {$isValid ? "bx-log-out" : "bx-log-in"} gradient" on:click={gotoLogin} class:highlight={onLoginPage}></button>
-    <span class="tooltip">{$isValid ? "Logout" : "Login"}</span>
+    <button class="bx {$isValid ? open ? "bx-log-out" : "bx-user" : "bx-log-in"} gradient" on:click={gotoLogin} class:highlight={onLoginPage}></button>
+    <span class="tooltip">{$isValid ? open ? "Logout" : "Account" : "Login"}</span>
   </div>
 </div>
 

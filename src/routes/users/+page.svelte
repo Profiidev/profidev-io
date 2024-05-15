@@ -19,12 +19,12 @@
   ];
   let currentUser = { id: "", username: "", name: "", permissions: [] as string[], admin: false };
   let isEdit = false;
-  
+
   const convertPermissions = (permissions: number) => {
     let permissionArray: string[] = [];
     for(let perm in Permissions) {
       if(!isNaN(Number(perm))) {
-        let permission = Number(perm); 
+        let permission = Number(perm);
         if((permissions & permission) === permission && permission !== Permissions.Admin) {
           permissionArray.push(Permissions[permission]);
         }

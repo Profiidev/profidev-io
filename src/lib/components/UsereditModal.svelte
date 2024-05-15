@@ -32,7 +32,7 @@
       error = "Password must be at least 8 characters long";
       return;
     }
-    
+
     fetch(`https://api.profidev.io/users`, {
       method: edit ? "PATCH" : "POST",
       headers: {

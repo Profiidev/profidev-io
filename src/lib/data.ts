@@ -1,9 +1,14 @@
-import { token } from "$lib/auth"
-import { get } from "svelte/store"
+import { token } from "$lib/auth";
+import { get } from "svelte/store";
 import type { Dataset } from "./types";
 import { DateTime } from "luxon";
 
-const getMetrics = async (metrics: string, start?: number, end?: number, step?: number) => {
+const getMetrics = async (
+  metrics: string,
+  start?: number,
+  end?: number,
+  step?: number,
+) => {
   let utc = new Date().getTimezoneOffset() * 60000;
   return fetch("https://api.profidev.io/metrics", {
     method: "POST",
@@ -20,16 +25,21 @@ const getMetrics = async (metrics: string, start?: number, end?: number, step?: 
   }).then((response) => response.json());
 };
 
-export const getCpuDatasets = async (onlyTotal: boolean, start?: number, end?: number, step?: number) => {
+export const getCpuDatasets = async (
+  onlyTotal: boolean,
+  start?: number,
+  end?: number,
+  step?: number,
+) => {
   return getMetrics("Cpu", start, end, step).then((data) => {
     let cores: {
-      [key: string]: [number, number][]
+      [key: string]: [number, number][];
     } = data.data;
 
     let labels = Object.values(cores)[0]
       .map((x) => x[0])
       .map((x) => new Date(x * 1000).toISOString());
-    
+
     let datasets: Dataset[] = [];
     Object.values(cores).forEach((core, i) => {
       let name = Object.keys(cores)[i].toString();
@@ -47,16 +57,20 @@ export const getCpuDatasets = async (onlyTotal: boolean, start?: number, end?: n
   });
 };
 
-export const getMemoryDataset = async (start?: number, end?: number, step?: number) => {
+export const getMemoryDataset = async (
+  start?: number,
+  end?: number,
+  step?: number,
+) => {
   return getMetrics("Memory", start, end, step).then((data) => {
     let memory: {
-      [key: string]: [number, number][]
+      [key: string]: [number, number][];
     } = data.data;
 
     let labels = Object.values(memory)[0]
       .map((x) => x[0])
       .map((x) => new Date(x * 1000).toISOString());
-    
+
     let datasets: Dataset[] = [];
     Object.values(memory).forEach((mem, i) => {
       let name = Object.keys(memory)[i].toString();
@@ -73,16 +87,20 @@ export const getMemoryDataset = async (start?: number, end?: number, step?: numb
   });
 };
 
-export const getNetworkDatasets = async (start?: number, end?: number, step?: number) => {
+export const getNetworkDatasets = async (
+  start?: number,
+  end?: number,
+  step?: number,
+) => {
   return getMetrics("Network", start, end, step).then((data) => {
     let network: {
-      [key: string]: [number, number][]
+      [key: string]: [number, number][];
     } = data.data;
 
     let labels = Object.values(network)[0]
       .map((x) => x[0])
       .map((x) => new Date(x * 1000).toISOString());
-    
+
     let datasets: Dataset[] = [];
     Object.values(network).forEach((net, i) => {
       let name = Object.keys(network)[i].toString();
@@ -99,16 +117,20 @@ export const getNetworkDatasets = async (start?: number, end?: number, step?: nu
   });
 };
 
-export const getDiskDataset = async (start?: number, end?: number, step?: number) => {
+export const getDiskDataset = async (
+  start?: number,
+  end?: number,
+  step?: number,
+) => {
   return getMetrics("Disk", start, end, step).then((data) => {
     let disk: {
-      [key: string]: [number, number][]
+      [key: string]: [number, number][];
     } = data.data;
 
     let labels = Object.values(disk)[0]
       .map((x) => x[0])
       .map((x) => new Date(x * 1000).toISOString());
-    
+
     let datasets: Dataset[] = [];
     Object.values(disk).forEach((d, i) => {
       let name = Object.keys(disk)[i].toString();
@@ -126,5 +148,11 @@ export const getDiskDataset = async (start?: number, end?: number, step?: number
 };
 
 export const convertTime = (time: string) => {
-  return DateTime.fromISO(time).setZone("local").toISO({ includeOffset: false })?.replace("T", " ").replace("Z", "") || "";
+  return (
+    DateTime.fromISO(time)
+      .setZone("local")
+      .toISO({ includeOffset: false })
+      ?.replace("T", " ")
+      .replace("Z", "") || ""
+  );
 };

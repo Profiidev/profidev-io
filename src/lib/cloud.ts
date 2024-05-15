@@ -1,7 +1,9 @@
 import { get } from "svelte/store";
 import { token } from "$lib/auth";
-import { gzip, ungzip } from "pako";
-import { SPEED_INTERPOLATION_STEPS } from "./constants";
+import {
+  SPEED_INTERPOLATION_CUTOFF,
+  SPEED_INTERPOLATION_STEPS,
+} from "./constants";
 
 export const getFiles = async (path: string) => {
   let add = path ? "/" + path : "";
@@ -48,7 +50,10 @@ export const deleteDir = async (path: string) => {
   return res;
 };
 
-export const downloadSingleFile = async (path: string, progress: (progress: number, speed: number) => void) => {
+export const downloadSingleFile = async (
+  path: string,
+  progress: (progress: number, speed: number) => void,
+) => {
   let res = fetch("https://api.profidev.io/cloud/files/" + path, {
     headers: {
       Authorization: get(token),
@@ -74,7 +79,11 @@ export const downloadSingleFile = async (path: string, progress: (progress: numb
   return res;
 };
 
-export const downloadMultipleFiles = async (path: string, paths: string[], progress: (progress: number, speed: number) => void) => {
+export const downloadMultipleFiles = async (
+  path: string,
+  paths: string[],
+  progress: (progress: number, speed: number) => void,
+) => {
   let toAdd = path ? "/" + path : "";
   let res = fetch("https://api.profidev.io/cloud/dirs" + toAdd, {
     method: "PUT",
@@ -120,13 +129,16 @@ export const createDir = async (path: string) => {
 };
 
 export const renameFile = async (path: string, newPath: string) => {
-  let res = fetch(`https://api.profidev.io/cloud/files/${path}?new_name=${newPath}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: get(token),
+  let res = fetch(
+    `https://api.profidev.io/cloud/files/${path}?new_name=${newPath}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: get(token),
+      },
     },
-  })
+  )
     .then((res) => res.json())
     .catch((e) => {
       return undefined;
@@ -136,13 +148,16 @@ export const renameFile = async (path: string, newPath: string) => {
 };
 
 export const renameDir = async (path: string, newPath: string) => {
-  let res = fetch(`https://api.profidev.io/cloud/dirs/${path}?new_name=${newPath}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: get(token),
+  let res = fetch(
+    `https://api.profidev.io/cloud/dirs/${path}?new_name=${newPath}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: get(token),
+      },
     },
-  })
+  )
     .then((res) => res.json())
     .catch((e) => {
       return undefined;
@@ -151,7 +166,11 @@ export const renameDir = async (path: string, newPath: string) => {
   return res;
 };
 
-export const uploadFile = async (path: string, file: File, progress: (progress: number, speed: number) => void) => {
+export const uploadFile = async (
+  path: string,
+  file: File,
+  progress: (progress: number, speed: number) => void,
+) => {
   const fileReader = new FileReader();
   let arrayBuffer: ArrayBuffer = await new Promise((resolve) => {
     fileReader.onload = (e) => {
@@ -174,13 +193,14 @@ export const uploadFile = async (path: string, file: File, progress: (progress: 
       bytesUploaded += chunk.byteLength;
 
       let now = window.performance.now();
-      let timePassed = (now - lastUpdate) / 1000;
+      let { speed, lastSpeedValues: newLastSpeedValues } = calcSpeed(
+        chunk.byteLength,
+        lastUpdate,
+        now,
+        lastSpeedValues,
+      );
       lastUpdate = now;
-      let speed = chunk.length / timePassed;
-
-      lastSpeedValues.push(speed);
-      if (lastSpeedValues.length > SPEED_INTERPOLATION_STEPS) lastSpeedValues.shift();
-      speed = lastSpeedValues.reduce((a, b) => a + b) / lastSpeedValues.length;
+      lastSpeedValues = newLastSpeedValues;
 
       progress((bytesUploaded / totalBytes) * 100, speed);
     },
@@ -239,7 +259,10 @@ export const checkIfExistMultiple = (path: string, files: string[]) => {
   return res;
 };
 
-const _readBody = async (response: Response, progress: (progress: number, speed: number) => void) => {
+const _readBody = async (
+  response: Response,
+  progress: (progress: number, speed: number) => void,
+) => {
   if (response.body === null) return new Blob([new Uint8Array(0)]);
   const reader = response.body.getReader();
 
@@ -249,7 +272,7 @@ const _readBody = async (response: Response, progress: (progress: number, speed:
   let received = 0;
   let chunks: Uint8Array[] = [];
   let lastUpdate = window.performance.now();
-  let lastSpeedValues = [];
+  let lastSpeedValues: number[] = [];
 
   // Loop through the response stream and extract data chunks
   while (true) {
@@ -263,13 +286,15 @@ const _readBody = async (response: Response, progress: (progress: number, speed:
       received += value.length;
 
       let now = window.performance.now();
-      let timePassed = (now - lastUpdate) / 1000;
-      lastUpdate = now;
-      let speed = value.length / timePassed;
+      let { speed, lastSpeedValues: newLastSpeedValues } = calcSpeed(
+        value.byteLength,
+        lastUpdate,
+        now,
+        lastSpeedValues,
+      );
 
-      lastSpeedValues.push(speed);
-      if (lastSpeedValues.length > SPEED_INTERPOLATION_STEPS) lastSpeedValues.shift();
-      speed = lastSpeedValues.reduce((a, b) => a + b) / lastSpeedValues.length;
+      lastUpdate = now;
+      lastSpeedValues = newLastSpeedValues;
 
       progress((received / contentLength) * 100, speed);
     }
@@ -286,4 +311,36 @@ const _readBody = async (response: Response, progress: (progress: number, speed:
   }
 
   return new Blob([body]);
+};
+
+const calcSpeed = (
+  size: number,
+  lastUpdate: number,
+  now: number,
+  lastSpeedValues: number[],
+) => {
+  let timePassed = (now - lastUpdate) / 1000;
+  let speed = size / timePassed;
+
+  if (isFinite(speed)) lastSpeedValues.push(speed);
+
+  if (lastSpeedValues.length > SPEED_INTERPOLATION_STEPS)
+    lastSpeedValues.shift();
+
+  let sorted = lastSpeedValues.sort((a, b) => a - b);
+  let filtered;
+  if (sorted.length >= SPEED_INTERPOLATION_CUTOFF * 2 + 1) {
+    filtered = sorted.slice(
+      SPEED_INTERPOLATION_CUTOFF,
+      sorted.length - SPEED_INTERPOLATION_CUTOFF,
+    );
+  } else {
+    filtered = sorted;
+  }
+  speed = filtered.reduce((a, b) => a + b) / filtered.length;
+
+  return {
+    speed,
+    lastSpeedValues,
+  };
 };

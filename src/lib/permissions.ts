@@ -7,6 +7,12 @@ export enum Permissions {
   Database = 32,
 }
 
-export const checkPermission = (permissions: number, permission: Permissions) => {
-  return (permissions & permission) === permission || (permissions & Permissions.Admin) === Permissions.Admin;
+export const checkPermission = (
+  permissions: number,
+  permission: Permissions,
+) => {
+  return (
+    (permissions & permission) === permission ||
+    (permissions & Permissions.Admin) === Permissions.Admin
+  );
 };

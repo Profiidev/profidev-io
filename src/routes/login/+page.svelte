@@ -11,10 +11,41 @@
   let showLoader = false;
   let error = "";
 
-  onMount(() => {
+  onMount(async () => {
     if(get(isValid)) {
       goto($lastUrl);
       lastUrl.set("/");
+      return;
+    }
+    //return;
+    if(window.PublicKeyCredential &&
+        await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
+        await PublicKeyCredential.isConditionalMediationAvailable) {
+      console.log("WebAuthn is supported");
+      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
+        challenge: new Uint8Array(16),
+        rp: {
+          name: "Profidev.io",
+          id: "profidev.io"
+        },
+        user: {
+          id: new Uint8Array(16),
+          name: "test",
+          displayName: "Test User"
+        },
+        pubKeyCredParams: [{alg: -7, type: "public-key"},{alg: -257, type: "public-key"}],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          requireResidentKey: false,
+        }
+      };
+
+      try {
+        const credential = await navigator.credentials.create({publicKey: publicKeyCredentialCreationOptions}) as PublicKeyCredential;
+        console.log(credential, credential.id, credential.response, new TextDecoder().decode(credential.response.clientDataJSON));
+      } catch(e) {
+        console.error(e);
+      }
     }
   });
 
@@ -157,6 +188,6 @@
   }
 
   .card:hover {
-    box-shadow: 0px 0px 30px 1px var(--primary-shadow);	
+    box-shadow: 0px 0px 30px 1px var(--primary-shadow);
   }
 </style>

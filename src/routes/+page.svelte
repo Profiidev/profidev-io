@@ -20,15 +20,15 @@
   let imageHeightScale = 1;
   let mounted = false;
   let currentFullScreen = '';
-  
+
   const getCpuData = async (start: number, end: number, step: number) => {
     return getCpuDatasets(true, start, end, step);
   };
-  
+
   const load = (img: any) => {
     let width = img.target.naturalWidth;
     let height = img.target.naturalHeight;
-   
+
     if (width > height) {
       imageWidthScale = 1;
       imageHeightScale = height / width;
@@ -60,7 +60,7 @@
         </Card>
         <Card size={size} id="memory" bind:currentFullScreen={currentFullScreen}>
           <LineChart header="Memory Usage" load={getMemoryDataset} />
-        </Card>  
+        </Card>
       {/if}
       <Card size={size} id="apod" bind:currentFullScreen={currentFullScreen}>
         <div class="apod" style="--scaleW: {imageWidthScale}; --scaleH: {imageHeightScale};">

@@ -36,13 +36,13 @@
       </Card>
       <Card size={size} id="memory" bind:currentFullScreen={currentFullScreen}>
         <LineChart header="Memory Usage" simple={false} load={getMemoryDataset} />
-      </Card> 
+      </Card>
       <Card size={size} id="netowrk" bind:currentFullScreen={currentFullScreen}>
         <LineChart header="Network Usage" simple={false} load={getNetworkDatasets} unit={"B"} />
-      </Card> 
+      </Card>
       <Card size={size} id="disk" bind:currentFullScreen={currentFullScreen}>
         <LineChart header="Disk Usage" simple={false} load={getDiskDataset} unit={"GB"} />
-      </Card> 
+      </Card>
     </div>
   {:else}
     <div class="not-container">
